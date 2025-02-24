@@ -7,6 +7,8 @@ const registerSchema = Joi.object({
     phone: Joi.string()
         .pattern(/^[0-9]{10,15}$/)
         .required(),
+    isAdmin: Joi.boolean().required(),
+    
     // employeeId: Joi.string().required(),
 });
 

@@ -49,10 +49,15 @@ export async function registerUser(request) {
         // Return user data
         const userData = {
             _id: user._id,
+            employeeId: user.employeeId,
             name: user.name,
             email: user.email,
             phone: user.phone,
             isAdmin: user.isAdmin,
+            role: user.role,
+            isActive: user.isActive,
+            isBanned: user.isBanned
+            
         };
 
         // Build the NextResponse
@@ -141,7 +146,8 @@ export async function adminUserLogin(request) {
     } catch (err) {
         return NextResponse.json(
             {
-                message: err.message, stack:
+                message: err.message,
+                stack:
                     process.env.NODE_ENV === 'development' ? err.stack : null,
             },
             { status: 500 }
@@ -211,11 +217,15 @@ export async function loginUser(request) {
 // 4) Logout user
 export async function logoutUser() {
     try {
-        const cookieStore = cookies();
-        // Remove 'authToken' by deleting it
-        cookieStore.delete('authToken');
+        const response = NextResponse.json(
+            { message: 'User logged out successfully' },
+            { status: 200 }
+        );
 
-        return NextResponse.json({ message: 'User logged out successfully' });
+        // Delete cookie on that NextResponse
+        response.cookies.delete('authToken');
+
+        return response;
     } catch (err) {
         return NextResponse.json({ message: err.message }, { status: 500 });
     }
