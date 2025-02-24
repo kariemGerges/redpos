@@ -1,7 +1,11 @@
 // src/server/controllers/employeeController.js
 import { NextResponse } from 'next/server';
 import User from '@/server/models/Users';
+import { validatePassword } from '../utils/passwordValidationUtils';
+import { isValidEmail } from '../utils/emailValidationUtils';
+import { isValidUSPhoneNumber } from '../utils/phoneValidationUtils';
 import connectDb from '@/server/config/db';
+import hashPassword from '../utils/hashPassword';
 
 await connectDb();
 
@@ -126,35 +130,71 @@ export async function getFilteredEmployee(request) {
 // edit employee
 export async function editEmployee(request) {
     try {
-        const { employeeId, name, role, email, phone, active, banned, isAdmin, password,  } = request;
+        const { searchParams } = request.nextUrl;
 
-        const user = await User.findOne({ employeeId });
-        if (!user) {
+        const id = searchParams.get('id');
+
+        // Extract fields to update from the request body
+        const updateFields = request;
+
+        // Validate email if it's being updated
+        if (updateFields.email && !isValidEmail(updateFields.email)) {
             return NextResponse.json(
-                { message: 'User not found' },
+                { message: 'Invalid email format' },
+                { status: 400 }
+            );
+        }
+
+        // Validate password if it's being updated
+        if (updateFields.password) {
+            validatePassword(updateFields.password);
+            updateFields.password = await hashPassword(updateFields.password);
+        }
+
+        // Validate phone number if it's being updated
+        if (updateFields.phone && !isValidUSPhoneNumber(updateFields.phone)) {
+            return NextResponse.json(
+                { message: 'Invalid phone number format' },
+                { status: 400 }
+            );
+        }
+
+        const updateUser = await User.findByIdAndUpdate(
+            id,
+            {
+                $set: updateFields,
+                updatedAt: new Date(),
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        // If no user found
+        if (!updateUser) {
+            return NextResponse.json(
+                { success: false, message: 'User not found' },
                 { status: 404 }
             );
         }
 
-        // build the user object
-        user.name = name;
-        user.role = role;
-        user.email = email;
-        user.phone = phone;
-        user.active = active;
-        user.banned = banned;
-        user.isAdmin = isAdmin;
-        user.password = password;
-
-        await user.save();
-
         return NextResponse.json(
-            { message: 'User updated successfully' },
+            {
+                success: true,
+                data: updateUser,
+                message: 'User updated successfully',
+            },
             { status: 200 }
         );
     } catch (error) {
         return NextResponse.json(
-            { message: error.message },
+            {
+                success: false,
+                message: error.message,
+                stack:
+                    process.env.NODE_ENV === 'development' ? error.stack : null,
+            },
             { status: 500 }
         );
     }
@@ -163,26 +203,28 @@ export async function editEmployee(request) {
 // delete employee
 export async function deleteEmployee(request) {
     try {
-        const { employeeId } = request;
+        const { searchParams } = request.nextUrl;
 
-        const user = await User.findOne({ employeeId });
-        if (!user) {
+        const id = searchParams.get('id');
+
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        // If no user found
+        if (!deletedUser) {
             return NextResponse.json(
-                { message: 'User not found' },
+                { success: false, error: 'Employee not found' },
                 { status: 404 }
             );
         }
 
-        await user.remove();
-
         return NextResponse.json(
-            { message: 'User deleted successfully' },
+            { success: true, message: 'Employee deleted' },
             { status: 200 }
         );
     } catch (error) {
         return NextResponse.json(
-            { message: error.message },
+            { success: false, error: error.message },
             { status: 500 }
         );
     }
-};
+}

@@ -18,7 +18,6 @@ function generateToken(id) {
 // 1) Register new user
 export async function registerUser(request) {
     try {
-        // const { name, email, phone, password } = await request.json();
         const { name, email, phone, password } = request;
 
         // Check if user already exists
@@ -56,8 +55,7 @@ export async function registerUser(request) {
             isAdmin: user.isAdmin,
             role: user.role,
             isActive: user.isActive,
-            isBanned: user.isBanned
-            
+            isBanned: user.isBanned,
         };
 
         // Build the NextResponse
