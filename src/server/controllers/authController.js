@@ -6,6 +6,7 @@ import User from '../models/Users';
 import { validatePassword } from '../utils/passwordValidationUtils';
 import { isValidEmail } from '../utils/emailValidationUtils';
 import { isValidUSPhoneNumber } from '../utils/phoneValidationUtils';
+
 import connectDb from '../config/db';
 
 // Connect to database
@@ -15,13 +16,15 @@ function generateToken(id) {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '60m' });
 }
 
-// 1) Register new user
+// 1) Add a new user
 export async function registerUser(request) {
     try {
         const { name, email, phone, password } = request;
 
         // Check if user already exists
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ email: { $eq: email } });
+
+        // Check if user already exists
         if (userExists) {
             throw new Error('User already exists');
         }
@@ -153,7 +156,7 @@ export async function adminUserLogin(request) {
     }
 }
 
-// 3) Standard login user
+// 3) user login
 export async function loginUser(request) {
     try {
         const { email, password } = request;
@@ -212,7 +215,7 @@ export async function loginUser(request) {
     }
 }
 
-// 4) Logout user
+// 4) user logout
 export async function logoutUser() {
     try {
         const response = NextResponse.json(
@@ -230,9 +233,13 @@ export async function logoutUser() {
 }
 
 // 5) Get logged-in user profile
+/**
+ * 
+ * this function gets the user profile it gets the user profile of the user who logged in
+ */
 export async function getUserProfile() {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const token = cookieStore.get('authToken')?.value;
 
         if (!token) {
@@ -255,15 +262,37 @@ export async function getUserProfile() {
 
         // Find user by decoded token ID
         const user = await User.findById(decoded.id).select('-password');
+
         if (!user) {
             return NextResponse.json(
                 { message: 'User not found' },
                 { status: 404 }
             );
-        }
+        };
 
-        return NextResponse.json(user);
+        if (!user.isActive || user.isBanned) {
+            return NextResponse.json(
+                { message: 'Access denied... Please contact admin' },
+                { status: 401 }
+            );
+        };
+
+        return NextResponse.json(
+            {
+                success: true,
+                data: user,
+            },
+            { status: 200 }
+        );
     } catch (error) {
-        return NextResponse.json({ message: error.message }, { status: 500 });
+        return NextResponse.json(
+            {
+                success: false,
+                error: error.message,
+                stack:
+                    process.env.NODE_ENV === 'development' ? error.stack : null,
+            },
+            { status: 500 }
+        );
     }
 }

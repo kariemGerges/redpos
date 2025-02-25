@@ -9,9 +9,8 @@ import hashPassword from '../utils/hashPassword';
 
 await connectDb();
 
-/**
- * Get All Employees
- */
+
+// Get All Employees
 export async function getAllEmployees() {
     try {
         const employees = await User.find({}, { password: 0 });
@@ -28,9 +27,8 @@ export async function getAllEmployees() {
     }
 }
 
-/**
- * Get Filtered Employees
- */
+
+// Get Filtered and Paginated Employees
 export async function getFilteredEmployee(request) {
     try {
         // so we can use request.nextUrl.searchParams to parse the query string

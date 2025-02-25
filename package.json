@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@getbrevo/brevo": "^2.2.0",
+    "@next/font": "^14.2.15",
     "@tanstack/react-query": "^5.66.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",

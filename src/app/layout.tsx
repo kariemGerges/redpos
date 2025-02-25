@@ -2,24 +2,11 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import QueryProvider from '@/app/providers/providers';
 import { LoginProvider } from '@/app/context/LoginModalContext';
 
-//  Create a client
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            // How many times to retry a failed request
-            retry: 2,
-            // Exponential backoff or custom function
-            retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000),
-            // Don't refetch on window focus (personal preference)
-            refetchOnWindowFocus: false,
-            // Keep data fresh for 60 seconds before it becomes “stale”
-            staleTime: 1000 * 60,
-        },
-    },
-});
+
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -32,18 +19,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: 'RedPOS',
+    title: 'NEXTPOS',
     description: 'Point of Sale and Employee Management System',
-    keywords: ['POS', 'RedPOS', 'Point of Sale', 'Employee Management'],
+    keywords: ['POS', 'NEXTPOS', 'Point of Sale', 'Employee Management'],
     authors: [
         { name: 'Kariem Gerges', url: 'https://github.com/KariemGerges' },
     ],
     creator: 'Kariem Gerges',
     openGraph: {
-        title: 'RedPOS',
+        title: 'NEXTPOS',
         description: 'Point of Sale',
         url: 'https://pos.vercel.app',
-        siteName: 'RedPOS',
+        siteName: 'NEXTPOS',
         locale: 'en-US',
         type: 'website',
     },
@@ -61,7 +48,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <QueryClientProvider client={queryClient}>
+            <QueryProvider>
                 <LoginProvider>
                     <body
                         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -69,7 +56,7 @@ export default function RootLayout({
                         {children}
                     </body>
                 </LoginProvider>
-            </QueryClientProvider>
+            </QueryProvider>
         </html>
     );
 }
