@@ -1,27 +1,19 @@
+'use client';
 import React from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Github, Globe } from 'lucide-react';
+import {
+    Facebook,
+    Instagram,
+    Github,
+    Globe,
+    AtSign,
+    Phone,
+    MapPinPlusInside,
+} from 'lucide-react';
 
 export const Footer: React.FC = () => {
     return (
         <footer className="bg-gray-900 text-white">
-            {/* CTA Section */}
-            <div className="bg-red-700 py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl font-bold mb-4">
-                        Ready to Transform Your Business?
-                    </h2>
-                    <p className="text-xl mb-6 max-w-2xl mx-auto">
-                        Join businesses that use our POS system to streamline
-                        operations and boost sales.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <button className="bg-transparent border-2 border-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-blue-600 transition-colors">
-                            Schedule Demo
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             {/* Main Footer Content */}
             <div className="container mx-auto px-4 py-12">
@@ -36,25 +28,25 @@ export const Footer: React.FC = () => {
                         <div className="flex space-x-4 pt-2">
                             <a
                                 href="#"
-                                className="text-gray-400 hover:text-white"
+                                className="text-gray-400 hover:text-red-500 transition"
                             >
                                 <Facebook />
                             </a>
                             <a
                                 href="#"
-                                className="text-gray-400 hover:text-white"
+                                className="text-gray-400 hover:text-red-500 transition"
                             >
                                 <Instagram />
                             </a>
                             <a
                                 href="#"
-                                className="text-gray-400 hover:text-white"
+                                className="text-gray-400 hover:text-red-500 transition"
                             >
                                 <Github />
                             </a>
                             <a
                                 href="#"
-                                className="text-gray-400 hover:text-white"
+                                className="text-gray-400 hover:text-red-500 transition"
                             >
                                 <Globe />
                             </a>
@@ -68,7 +60,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Inventory Management
                                 </Link>
@@ -76,7 +68,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Sales Analytics
                                 </Link>
@@ -84,7 +76,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Customer Loyalty
                                 </Link>
@@ -92,7 +84,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Employee Management
                                 </Link>
@@ -100,7 +92,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Multi-location Support
                                 </Link>
@@ -108,7 +100,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Mobile Access
                                 </Link>
@@ -123,7 +115,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Documentation
                                 </Link>
@@ -131,7 +123,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Blog
                                 </Link>
@@ -139,7 +131,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Case Studies
                                 </Link>
@@ -147,7 +139,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Help Center
                                 </Link>
@@ -155,7 +147,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     API Reference
                                 </Link>
@@ -163,7 +155,7 @@ export const Footer: React.FC = () => {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-gray-400 hover:text-white"
+                                    className="text-gray-400 hover:text-red-500 transition"
                                 >
                                     Community Forum
                                 </Link>
@@ -176,40 +168,19 @@ export const Footer: React.FC = () => {
                         <h3 className="text-lg font-bold mb-4">Contact</h3>
                         <ul className="space-y-2">
                             <li className="flex items-start">
-                                <svg
-                                    className="h-6 w-6 mr-2 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    {/* SVG Path */}
-                                </svg>
+                                <AtSign className=" mr-2 text-gray-400" />
                                 <span className="text-gray-400">
                                     support@nextpos.com
                                 </span>
                             </li>
                             <li className="flex items-start">
-                                <svg
-                                    className="h-6 w-6 mr-2 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    {/* SVG Path */}
-                                </svg>
+                                <Phone className="mr-2 text-gray-400" />
                                 <span className="text-gray-400">
                                     +1 (555) 123-4567
                                 </span>
                             </li>
                             <li className="flex items-start">
-                                <svg
-                                    className="h-6 w-6 mr-2 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    {/* SVG Path */}
-                                </svg>
+                                <MapPinPlusInside className="mr-2 text-gray-400" />
                                 <span className="text-gray-400">
                                     123 Tech Plaza
                                     <br />

@@ -1,8 +1,10 @@
+'use client';
 import React from 'react';
 import Link from 'next/link';
-import Logo from './Logo';
+import Logo from '../Logo';
 
-export const Header: React.FC = () => {
+export const MainHeader: React.FC = () => {
+
     return (
         <header className="bg-black text-white py-4 shadow-lg sticky top-0 z-50">
             <div className="container mx-auto px-6 flex justify-between items-center">
@@ -20,13 +22,13 @@ export const Header: React.FC = () => {
                 {/* Navigation Links */}
                 <nav className="hidden md:flex space-x-6">
                     <Link
-                        href="/features"
+                        href="features"
                         className="text-gray-300 hover:text-red-500 transition"
                     >
                         Features
                     </Link>
                     <Link
-                        href="/pricing"
+                        href="pricing"
                         className="text-gray-300 hover:text-red-500 transition"
                     >
                         Pricing
@@ -44,11 +46,12 @@ export const Header: React.FC = () => {
                         Contact
                     </Link>
                 </nav>
+            
 
                 {/* Call to Action Button */}
-                <Link href="/demo">
+                <Link href="requestDemo">
                     <button className="bg-red-600 px-6 py-2 rounded-lg font-semibold hover:bg-red-500 transition">
-                        Get a Demo
+                        Request Demo
                     </button>
                 </Link>
             </div>

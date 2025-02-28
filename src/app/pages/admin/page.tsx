@@ -63,6 +63,19 @@ const mockEmployees: Employee[] = [
     },
 ];
 
+const getStatusBadgeColor = (status: Employee['status']): string => {
+    switch (status) {
+        case 'Active':
+            return 'bg-red-600 text-white';
+        case 'On Leave':
+            return 'bg-black text-red-500';
+        case 'Terminated':
+            return 'bg-red-900 text-white';
+        default:
+            return 'bg-gray-600 text-gray-300';
+    }
+};
+
 const EmployeeDashboard: React.FC = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -81,10 +94,6 @@ const EmployeeDashboard: React.FC = () => {
     useEffect(() => {
         const fetchEmployees = () => {
             setLoading(true);
-
-            // In a real app, you would call your API with the current filters and page
-            // const response = await fetch(`/api/employees?page=${currentPage}&search=${searchTerm}&department=${departmentFilter}&status=${statusFilter}`);
-            // const data = await response.json();
 
             // Simulate API response with mock data
             setTimeout(() => {
@@ -131,15 +140,7 @@ const EmployeeDashboard: React.FC = () => {
 
     // Function to save edited employee
     const handleSaveEdit = (): void => {
-        // In a real app, you would call your API to update the employee
-        // await fetch(`/api/employees/${editEmployee.id}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(editEmployee)
-        // });
-
         if (editEmployee) {
-            // Update local state
             setEmployees(
                 employees.map((emp) =>
                     emp.id === editEmployee.id ? editEmployee : emp
@@ -157,11 +158,7 @@ const EmployeeDashboard: React.FC = () => {
 
     // Function to confirm delete
     const confirmDelete = (): void => {
-        // In a real app, you would call your API to delete the employee
-        // await fetch(`/api/employees/${employeeToDelete.id}`, { method: 'DELETE' });
-
         if (employeeToDelete) {
-            // Update local state
             setEmployees(
                 employees.filter((emp) => emp.id !== employeeToDelete.id)
             );
@@ -174,26 +171,12 @@ const EmployeeDashboard: React.FC = () => {
     const departments: string[] = ['Engineering', 'Marketing', 'HR', 'Sales'];
     const statuses: Employee['status'][] = ['Active', 'On Leave', 'Terminated'];
 
-    // Function to get status badge color
-    const getStatusBadgeColor = (status: Employee['status']): string => {
-        switch (status) {
-            case 'Active':
-                return 'bg-green-100 text-green-800';
-            case 'On Leave':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'Terminated':
-                return 'bg-red-100 text-red-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
     return (
-        <div className="bg-gray-50 min-h-screen">
+        <div className="bg-black min-h-screen">
             {/* Header */}
-            <div className="bg-white shadow">
+            <div className="bg-red-600 shadow">
                 <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-white">
                         Employee Management Dashboard
                     </h1>
                 </div>
@@ -202,16 +185,16 @@ const EmployeeDashboard: React.FC = () => {
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
                 {/* Filters and Search */}
-                <div className="mb-6 bg-white p-4 rounded-lg shadow">
+                <div className="mb-6 bg-gray-800 p-4 rounded-lg shadow">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1">
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search className="h-5 w-5 text-gray-400" />
+                                    <Search className="h-5 w-5 text-red-500" />
                                 </div>
                                 <input
                                     type="text"
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    className="block w-full pl-10 pr-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-red-500 focus:border-red-500"
                                     placeholder="Search employees..."
                                     value={searchTerm}
                                     onChange={(
@@ -223,7 +206,7 @@ const EmployeeDashboard: React.FC = () => {
 
                         <div className="w-full md:w-1/5">
                             <select
-                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                 value={departmentFilter}
                                 onChange={(
                                     e: React.ChangeEvent<HTMLSelectElement>
@@ -240,7 +223,7 @@ const EmployeeDashboard: React.FC = () => {
 
                         <div className="w-full md:w-1/5">
                             <select
-                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                 value={statusFilter}
                                 onChange={(
                                     e: React.ChangeEvent<HTMLSelectElement>
@@ -258,84 +241,84 @@ const EmployeeDashboard: React.FC = () => {
                 </div>
 
                 {/* Employee Table */}
-                <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="bg-gray-800 shadow rounded-lg overflow-hidden">
                     {loading ? (
                         <div className="py-24 text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-                            <p className="mt-4 text-gray-500">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto"></div>
+                            <p className="mt-4 text-gray-300">
                                 Loading employees...
                             </p>
                         </div>
                     ) : employees.length === 0 ? (
                         <div className="py-24 text-center">
-                            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
-                            <p className="mt-4 text-gray-500">
+                            <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+                            <p className="mt-4 text-gray-300">
                                 No employees found matching your criteria
                             </p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-600">
+                                <thead className="bg-gray-700">
                                     <tr>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Name
                                         </th>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Email
                                         </th>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Department
                                         </th>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Role
                                         </th>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Status
                                         </th>
                                         <th
                                             scope="col"
-                                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider"
                                         >
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-gray-800 divide-y divide-gray-600">
                                     {employees.map((employee: Employee) => (
                                         <tr key={employee.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className="text-sm font-medium text-white">
                                                     {employee.name}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-300">
                                                     {employee.email}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-300">
                                                     {employee.department}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-300">
                                                     {employee.role}
                                                 </div>
                                             </td>
@@ -355,7 +338,7 @@ const EmployeeDashboard: React.FC = () => {
                                                             employee
                                                         )
                                                     }
-                                                    className="text-blue-600 hover:text-blue-900 mr-3"
+                                                    className="text-red-400 hover:text-red-300 mr-3"
                                                 >
                                                     <Edit className="h-5 w-5" />
                                                 </button>
@@ -365,7 +348,7 @@ const EmployeeDashboard: React.FC = () => {
                                                             employee
                                                         )
                                                     }
-                                                    className="text-red-600 hover:text-red-900"
+                                                    className="text-red-800 hover:text-red-700"
                                                 >
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
@@ -378,7 +361,7 @@ const EmployeeDashboard: React.FC = () => {
                     )}
 
                     {/* Pagination */}
-                    <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-600 sm:px-6">
                         <div className="flex-1 flex justify-between sm:hidden">
                             <button
                                 onClick={() =>
@@ -389,9 +372,9 @@ const EmployeeDashboard: React.FC = () => {
                                 disabled={currentPage === 1}
                                 className={`${
                                     currentPage === 1
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                                } relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md`}
+                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                } relative inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md`}
                             >
                                 Previous
                             </button>
@@ -404,16 +387,16 @@ const EmployeeDashboard: React.FC = () => {
                                 disabled={currentPage === totalPages}
                                 className={`${
                                     currentPage === totalPages
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                                } ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md`}
+                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                } ml-3 relative inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md`}
                             >
                                 Next
                             </button>
                         </div>
                         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
-                                <p className="text-sm text-gray-700">
+                                <p className="text-sm text-gray-300">
                                     Showing{' '}
                                     <span className="font-medium">
                                         {employees.length}
@@ -435,9 +418,9 @@ const EmployeeDashboard: React.FC = () => {
                                         disabled={currentPage === 1}
                                         className={`${
                                             currentPage === 1
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-white text-gray-500 hover:bg-gray-50'
-                                        } relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium`}
+                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                        } relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-600 text-sm font-medium`}
                                     >
                                         <span className="sr-only">
                                             Previous
@@ -445,7 +428,6 @@ const EmployeeDashboard: React.FC = () => {
                                         <ChevronLeft className="h-5 w-5" />
                                     </button>
 
-                                    {/* Page numbers */}
                                     {[...Array(totalPages)].map((_, index) => (
                                         <button
                                             key={index}
@@ -454,8 +436,8 @@ const EmployeeDashboard: React.FC = () => {
                                             }
                                             className={`${
                                                 currentPage === index + 1
-                                                    ? 'bg-blue-50 border-blue-500 text-blue-600'
-                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                    ? 'bg-red-600 border-red-600 text-white'
+                                                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
                                             } relative inline-flex items-center px-4 py-2 border text-sm font-medium`}
                                         >
                                             {index + 1}
@@ -471,9 +453,9 @@ const EmployeeDashboard: React.FC = () => {
                                         disabled={currentPage === totalPages}
                                         className={`${
                                             currentPage === totalPages
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-white text-gray-500 hover:bg-gray-50'
-                                        } relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium`}
+                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                        } relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-600 text-sm font-medium`}
                                     >
                                         <span className="sr-only">Next</span>
                                         <ChevronRight className="h-5 w-5" />
@@ -493,7 +475,7 @@ const EmployeeDashboard: React.FC = () => {
                             className="fixed inset-0 transition-opacity"
                             aria-hidden="true"
                         >
-                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                            <div className="absolute inset-0 bg-black opacity-75"></div>
                         </div>
                         <span
                             className="hidden sm:inline-block sm:align-middle sm:h-screen"
@@ -501,23 +483,23 @@ const EmployeeDashboard: React.FC = () => {
                         >
                             &#8203;
                         </span>
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <div className="inline-block align-bottom bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                            <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 className="text-lg leading-6 font-medium text-white mb-4">
                                     Edit Employee
                                 </h3>
                                 <div className="grid grid-cols-1 gap-4">
                                     <div>
                                         <label
                                             htmlFor="name"
-                                            className="block text-sm font-medium text-gray-700"
+                                            className="block text-sm font-medium text-gray-300"
                                         >
                                             Name
                                         </label>
                                         <input
                                             type="text"
                                             id="name"
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             value={editEmployee.name}
                                             onChange={(
                                                 e: React.ChangeEvent<HTMLInputElement>
@@ -532,14 +514,14 @@ const EmployeeDashboard: React.FC = () => {
                                     <div>
                                         <label
                                             htmlFor="email"
-                                            className="block text-sm font-medium text-gray-700"
+                                            className="block text-sm font-medium text-gray-300"
                                         >
                                             Email
                                         </label>
                                         <input
                                             type="email"
                                             id="email"
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             value={editEmployee.email}
                                             onChange={(
                                                 e: React.ChangeEvent<HTMLInputElement>
@@ -554,13 +536,13 @@ const EmployeeDashboard: React.FC = () => {
                                     <div>
                                         <label
                                             htmlFor="department"
-                                            className="block text-sm font-medium text-gray-700"
+                                            className="block text-sm font-medium text-gray-300"
                                         >
                                             Department
                                         </label>
                                         <select
                                             id="department"
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             value={editEmployee.department}
                                             onChange={(
                                                 e: React.ChangeEvent<HTMLSelectElement>
@@ -581,14 +563,14 @@ const EmployeeDashboard: React.FC = () => {
                                     <div>
                                         <label
                                             htmlFor="role"
-                                            className="block text-sm font-medium text-gray-700"
+                                            className="block text-sm font-medium text-gray-300"
                                         >
                                             Role
                                         </label>
                                         <input
                                             type="text"
                                             id="role"
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             value={editEmployee.role}
                                             onChange={(
                                                 e: React.ChangeEvent<HTMLInputElement>
@@ -603,13 +585,13 @@ const EmployeeDashboard: React.FC = () => {
                                     <div>
                                         <label
                                             htmlFor="status"
-                                            className="block text-sm font-medium text-gray-700"
+                                            className="block text-sm font-medium text-gray-300"
                                         >
                                             Status
                                         </label>
                                         <select
                                             id="status"
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             value={editEmployee.status}
                                             onChange={(
                                                 e: React.ChangeEvent<HTMLSelectElement>
@@ -633,17 +615,17 @@ const EmployeeDashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <div className="bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button
                                     type="button"
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
                                     onClick={handleSaveEdit}
                                 >
                                     Save
                                 </button>
                                 <button
                                     type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-700 text-base font-medium text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                     onClick={() => setEditEmployee(null)}
                                 >
                                     Cancel
@@ -662,7 +644,7 @@ const EmployeeDashboard: React.FC = () => {
                             className="fixed inset-0 transition-opacity"
                             aria-hidden="true"
                         >
-                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                            <div className="absolute inset-0 bg-black opacity-75"></div>
                         </div>
                         <span
                             className="hidden sm:inline-block sm:align-middle sm:h-screen"
@@ -670,18 +652,18 @@ const EmployeeDashboard: React.FC = () => {
                         >
                             &#8203;
                         </span>
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div className="inline-block align-bottom bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                            <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                 <div className="sm:flex sm:items-start">
-                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        <AlertCircle className="h-6 w-6 text-red-600" />
+                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                                        <AlertCircle className="h-6 w-6 text-red-500" />
                                     </div>
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                        <h3 className="text-lg leading-6 font-medium text-white">
                                             Delete Employee
                                         </h3>
                                         <div className="mt-2">
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-300">
                                                 Are you sure you want to delete{' '}
                                                 {employeeToDelete.name}? This
                                                 action cannot be undone.
@@ -690,7 +672,7 @@ const EmployeeDashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <div className="bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button
                                     type="button"
                                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -700,7 +682,7 @@ const EmployeeDashboard: React.FC = () => {
                                 </button>
                                 <button
                                     type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-700 text-base font-medium text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                     onClick={() => {
                                         setShowDeleteModal(false);
                                         setEmployeeToDelete(null);
