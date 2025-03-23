@@ -16,6 +16,8 @@ const Pagination: React.FC<PaginationProps> = ({
 }) => {
     const [Page, setPage] = useState<number>(1);
 
+    console.log('currentPage', Page);
+
     return (
         <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-600 sm:px-6">
             <div className="flex-1 flex justify-between sm:hidden">

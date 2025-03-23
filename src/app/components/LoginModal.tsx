@@ -1,14 +1,14 @@
 'use client';
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, ChangeEvent } from 'react';
+// import { useRouter } from 'next/navigation';
 import { useLoginModal } from '@/app/context/LoginModalContext';
 // import { useLoginAdmin } from '../../hooks/auth/useLoginAdmin';
-import { LogIn, Mail, Lock, Loader } from 'lucide-react';
+import { LogIn, Mail, Lock } from 'lucide-react';
 
 const AuthModal = () => {
-    const router = useRouter();
+    // const router = useRouter();
     // const mutation = useLoginAdmin();
-    const { isOpen, open, close } = useLoginModal();
+    const { isOpen } = useLoginModal();
 
     const [formData, setFormData] = useState({
         email: '',

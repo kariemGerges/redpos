@@ -129,15 +129,15 @@ const EditEmployeeForm: React.FC<EditEmployeeProps> = ({
             // Update employee with new data
             const updatedEmployee = {
                 ...formData,
-                updatedAt: new Date().toISOString(),
+                updatedAt: new Date(),
             };
 
             // Only include password if it was changed
             if (!formData.password) {
-                delete updatedEmployee.password;
+                delete (updatedEmployee as { [key: string]: string | boolean | Date })['password'];
             }
 
-            onSave(employee._id, updatedEmployee);
+            onSave(String(employee._id), updatedEmployee);
         } else {
             // Focus the first field with an error
             const firstErrorField = document.querySelector('.border-red-500');

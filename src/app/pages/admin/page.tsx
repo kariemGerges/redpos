@@ -29,7 +29,7 @@ const getStatusBadgeColor = (status: Employee['status']): string => {
 };
 
 const EmployeeDashboard: React.FC = () => {
-    const [employees, setEmployees] = useState<Employee[]>([]);
+    // const [employees, setEmployees] = useState<Employee[]>([]);
 
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');

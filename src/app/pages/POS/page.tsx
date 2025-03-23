@@ -153,7 +153,7 @@ export default function POS() {
                 image: product.image || '/api/placeholder/80/80', // Use a placeholder if no image
             };
         const existingItemIndex = cart.findIndex(
-            (item) => item.product.id === normalizedProduct.id
+            (item) => item.product._id === normalizedProduct.id
         );
 
         if (existingItemIndex > -1) {
@@ -167,13 +167,13 @@ export default function POS() {
 
     // Remove from cart
     const removeFromCart = (productId: number) => {
-        setCart(cart.filter((item) => item.product.id !== productId));
+        setCart(cart.filter((item) => item.product._id !== productId));
     };
 
     // Update quantity
     const updateQuantity = (productId: number, change: number) => {
         const existingItemIndex = cart.findIndex(
-            (item) => item.product.id === productId
+            (item) => item.product._id === productId
         );
 
         if (existingItemIndex > -1) {
@@ -212,7 +212,7 @@ export default function POS() {
             if (!isNaN(price)) {
                 // Create a custom product
                 const customProduct: Product = {
-                    id: Date.now(), // Generate a unique ID
+                    _id: Date.now(), // Generate a unique ID
                     name: manualEntryProductName,
                     price: price,
                     category: 'custom',
@@ -224,7 +224,7 @@ export default function POS() {
             // Here you would typically look up the PLU in your database
             // For demo purposes, we'll create a placeholder product
             const customProduct: Product = {
-                id: Date.now(),
+                _id: Date.now(),
                 name: `Product (PLU: ${manualEntryValue})`,
                 price: 1.99, // Default price
                 category: 'produce',
@@ -235,7 +235,7 @@ export default function POS() {
             // Here you would typically look up the UPC in your database
             // For demo purposes, we'll create a placeholder product
             const customProduct: Product = {
-                id: Date.now(),
+                _id: Date.now(),
                 name: `Product (UPC: ${manualEntryValue})`,
                 price: 3.99, // Default price
                 category: 'groceries',
@@ -688,7 +688,7 @@ export default function POS() {
                                                     className="p-1 bg-gray-600 rounded-md hover:bg-gray-500"
                                                     onClick={() =>
                                                         updateQuantity(
-                                                            item.product.id,
+                                                            item.product._id,
                                                             -1
                                                         )
                                                     }
@@ -702,7 +702,7 @@ export default function POS() {
                                                     className="p-1 bg-gray-600 rounded-md hover:bg-gray-500"
                                                     onClick={() =>
                                                         updateQuantity(
-                                                            item.product.id,
+                                                            item.product._id,
                                                             1
                                                         )
                                                     }
@@ -721,7 +721,7 @@ export default function POS() {
                                         <button
                                             className="ml-3 p-1 self-center text-gray-400 hover:text-white"
                                             onClick={() =>
-                                                removeFromCart(item.product.id)
+                                                removeFromCart(item.product._id)
                                             }
                                         >
                                             <Trash2 size={16} />
