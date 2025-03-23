@@ -1,67 +1,19 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import {
-    Search,
-    Edit,
-    Trash2,
-    ChevronLeft,
-    ChevronRight,
-    AlertCircle,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, AlertCircle } from 'lucide-react';
+import { useDataFetcher } from '@/app/hooks/useDataFetcher';
+import { useDataMutation } from '@/app/hooks/useDataMutation';
 
-// TypeScript interfaces
-interface Employee {
-    id: number;
-    name: string;
-    email: string;
-    department: string;
-    role: string;
-    status: 'Active' | 'On Leave' | 'Terminated';
-}
+// import components
+import AddEmployeeForm from '@/app/components/Admin/AddEmployeeForm';
+import EditEmployeeForm from '@/app/components/Admin/EditEmployeeForm';
+import StatsOverview from '@/app/components/Admin/ui/StatsOverviewSection';
+import AddEmployeeSection from '@/app/components/Admin/ui/AddEmployeeSection';
+import Pagination from '@/app/components/Admin/ui/Pagination';
+import EmployeesTableSection from '@/app/components/Admin/ui/EmployeesTableSection';
+import SuccessMessage from '@/app/components/Admin/ui/Success';
 
-// Mock data for demonstration
-const mockEmployees: Employee[] = [
-    {
-        id: 1,
-        name: 'Jane Smith',
-        email: 'jane.smith@company.com',
-        department: 'Engineering',
-        role: 'Senior Developer',
-        status: 'Active',
-    },
-    {
-        id: 2,
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        department: 'Marketing',
-        role: 'Marketing Manager',
-        status: 'Active',
-    },
-    {
-        id: 3,
-        name: 'Alice Johnson',
-        email: 'alice.johnson@company.com',
-        department: 'HR',
-        role: 'HR Specialist',
-        status: 'On Leave',
-    },
-    {
-        id: 4,
-        name: 'Robert Williams',
-        email: 'robert.williams@company.com',
-        department: 'Sales',
-        role: 'Sales Representative',
-        status: 'Active',
-    },
-    {
-        id: 5,
-        name: 'Emily Brown',
-        email: 'emily.brown@company.com',
-        department: 'Engineering',
-        role: 'QA Engineer',
-        status: 'Active',
-    },
-];
+import { Employee } from '@/app/types';
 
 const getStatusBadgeColor = (status: Employee['status']): string => {
     switch (status) {
@@ -78,75 +30,142 @@ const getStatusBadgeColor = (status: Employee['status']): string => {
 
 const EmployeeDashboard: React.FC = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(1);
+
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [departmentFilter, setDepartmentFilter] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
+
+    const [addEmployee, setAddEmployee] = useState<Employee | null>(null);
     const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
+
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
         null
     );
+    const [formErrors, setFormErrors] = useState<string | null>(null);
+    const [editFormErrors, setEditFormErrors] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [showSuccess, setShowSuccess] = useState<boolean>(false);
 
-    // Mock API call to fetch employees with pagination and filters
-    useEffect(() => {
-        const fetchEmployees = () => {
-            setLoading(true);
+    // Fetch employees from API
+    const { data, isLoading, isError } = useDataFetcher('/api/empl/getAllEmpl');
 
-            // Simulate API response with mock data
-            setTimeout(() => {
-                let filteredData = [...mockEmployees];
+    const emplData = data?.employeeData.Users || [];
+    const emplCount = data?.employeeData.totalEmployee || 0;
+    const currentPage = data?.employeeData.currentPage || 1;
+    const totalPages = data?.employeeData.totalPages || 1;
+    // console.dir(data);
 
-                if (searchTerm) {
-                    filteredData = filteredData.filter(
-                        (emp) =>
-                            emp.name
-                                .toLowerCase()
-                                .includes(searchTerm.toLowerCase()) ||
-                            emp.email
-                                .toLowerCase()
-                                .includes(searchTerm.toLowerCase())
-                    );
-                }
+    // Setup mutation for adding employees
+    type EmployeeSubsetAdd = Pick<
+        Employee,
+        'name' | 'email' | 'password' | 'phone' | 'isAdmin'
+    >;
 
-                if (departmentFilter) {
-                    filteredData = filteredData.filter(
-                        (emp) => emp.department === departmentFilter
-                    );
-                }
+    type EmployeeSubsetEdit = Pick<
+        Employee,
+        | 'name'
+        | 'email'
+        | 'password'
+        | 'phone'
+        | 'role'
+        | 'isAdmin'
+        | 'isActive'
+        | 'isBanned'
+    >;
 
-                if (statusFilter) {
-                    filteredData = filteredData.filter(
-                        (emp) =>
-                            emp.status === (statusFilter as Employee['status'])
-                    );
-                }
+    const addEmployeeMutation = useDataMutation<Omit<EmployeeSubsetAdd, '_id'>>(
+        '/api/empl/registerEmpl',
+        {
+            method: 'POST',
+            onSuccessQueryKey: 'fetchData', // This will invalidate all queries that start with 'fetchData'
+        }
+    );
 
-                setEmployees(filteredData);
-                setTotalPages(Math.ceil(filteredData.length / 5) || 1);
-                setLoading(false);
-            }, 500);
+    const editEmployeeMutation = useDataMutation<
+        Omit<EmployeeSubsetEdit, '_id'>
+    >(`/api/empl/editEmpl?id=${editEmployee?._id}`, {
+        method: 'PATCH',
+        onSuccessQueryKey: 'fetchData', // This will invalidate all queries that start with 'fetchData'
+    });
+
+    const deleteEmployeeMutation = useDataMutation<Employee>(
+        `/api/empl/delEmpl?id=${employeeToDelete?._id}`,
+        {
+            method: 'DELETE',
+            onSuccessQueryKey: 'fetchData', // This will invalidate all queries that start with 'fetchData'
+        }
+    );
+
+    const handleAddEmployee = (): void => {
+        // Just initialize the form with empty values
+        const newEmployee: Omit<EmployeeSubsetAdd, '_id'> = {
+            name: '',
+            email: '',
+            password: '',
+            phone: '',
+            isAdmin: false,
         };
-
-        fetchEmployees();
-    }, [currentPage, searchTerm, departmentFilter, statusFilter]);
+        setAddEmployee(newEmployee as Employee);
+    };
 
     // Function to handle edit employee
     const handleEditClick = (employee: Employee): void => {
         setEditEmployee({ ...employee });
+        setEditFormErrors(null);
     };
 
     // Function to save edited employee
-    const handleSaveEdit = (): void => {
+    const handleSaveEdit = async (): Promise<void> => {
         if (editEmployee) {
-            setEmployees(
-                employees.map((emp) =>
-                    emp.id === editEmployee.id ? editEmployee : emp
-                )
-            );
+            setEditFormErrors(null);
+            setIsSubmitting(true);
+
+            try {
+                await editEmployeeMutation.mutateAsync(editEmployee);
+                setEditEmployee(null);
+                setShowSuccess(true);
+            } catch (error) {
+                console.error('Failed to edit employee:', error);
+                setEditFormErrors(
+                    typeof error === 'string'
+                        ? error
+                        : error instanceof Error
+                        ? error.message
+                        : 'Failed to edit employee'
+                );
+            } finally {
+                // Make sure to reset the submitting state whether success or failure
+                setIsSubmitting(false);
+            }
+
             setEditEmployee(null);
+        }
+    };
+
+    // Function to save added employee
+    const handleSaveAdd = async (): Promise<void> => {
+        if (addEmployee) {
+            setFormErrors(null);
+            setIsSubmitting(true);
+            try {
+                // console.log('addEmployee', addEmployee);
+                // Call the API to create the employee
+                await addEmployeeMutation.mutateAsync(addEmployee);
+                setAddEmployee(null);
+                setShowSuccess(true);
+            } catch (error) {
+                console.error('Failed to add employee:', error);
+                setFormErrors(
+                    typeof error === 'string'
+                        ? error
+                        : error instanceof Error
+                        ? error.message
+                        : 'Failed to add employee'
+                );
+            } finally {
+                // Make sure to reset the submitting state whether success or failure
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -157,19 +176,33 @@ const EmployeeDashboard: React.FC = () => {
     };
 
     // Function to confirm delete
-    const confirmDelete = (): void => {
+    const confirmDelete = async (): Promise<void> => {
         if (employeeToDelete) {
-            setEmployees(
-                employees.filter((emp) => emp.id !== employeeToDelete.id)
-            );
+            // setEmployees(
+            //     employees.filter((emp) => emp._id !== employeeToDelete._id)
+            // );
+            await deleteEmployeeMutation.mutateAsync(employeeToDelete);
             setShowDeleteModal(false);
             setEmployeeToDelete(null);
         }
     };
 
     // Available departments and statuses for filters
-    const departments: string[] = ['Engineering', 'Marketing', 'HR', 'Sales'];
-    const statuses: Employee['status'][] = ['Active', 'On Leave', 'Terminated'];
+    const Role: Employee['status'][] = ['Active', 'On Leave', 'Terminated'];
+
+    // error handling
+    if (isError) {
+        return (
+            <div className="bg-black min-h-screen">
+                <div className="flex flex-col items-center justify-center h-screen">
+                    <AlertCircle className="h-8 w-8 text-red-500" />
+                    <h1 className="text-2xl font-bold text-white mt-4">
+                        Something went wrong, please refresh the page
+                    </h1>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-black min-h-screen">
@@ -204,23 +237,7 @@ const EmployeeDashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="w-full md:w-1/5">
-                            <select
-                                className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                value={departmentFilter}
-                                onChange={(
-                                    e: React.ChangeEvent<HTMLSelectElement>
-                                ) => setDepartmentFilter(e.target.value)}
-                            >
-                                <option value="">All Departments</option>
-                                {departments.map((dept) => (
-                                    <option key={dept} value={dept}>
-                                        {dept}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
+                        {/* Role Filter */}
                         <div className="w-full md:w-1/5">
                             <select
                                 className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
@@ -229,8 +246,8 @@ const EmployeeDashboard: React.FC = () => {
                                     e: React.ChangeEvent<HTMLSelectElement>
                                 ) => setStatusFilter(e.target.value)}
                             >
-                                <option value="">All Statuses</option>
-                                {statuses.map((status) => (
+                                <option value="">All Roles</option>
+                                {Role.map((status) => (
                                     <option key={status} value={status}>
                                         {status}
                                     </option>
@@ -240,16 +257,22 @@ const EmployeeDashboard: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Stats Overview */}
+                <StatsOverview employees={emplData} />
+
+                {/* Adding new employee */}
+                <AddEmployeeSection handleAddEmployee={handleAddEmployee} />
+
                 {/* Employee Table */}
                 <div className="bg-gray-800 shadow rounded-lg overflow-hidden">
-                    {loading ? (
+                    {isLoading ? (
                         <div className="py-24 text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto"></div>
                             <p className="mt-4 text-gray-300">
                                 Loading employees...
                             </p>
                         </div>
-                    ) : employees.length === 0 ? (
+                    ) : emplData.length === 0 ? (
                         <div className="py-24 text-center">
                             <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
                             <p className="mt-4 text-gray-300">
@@ -257,383 +280,53 @@ const EmployeeDashboard: React.FC = () => {
                             </p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-600">
-                                <thead className="bg-gray-700">
-                                    <tr>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Name
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Email
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Department
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Role
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Status
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                        >
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-gray-800 divide-y divide-gray-600">
-                                    {employees.map((employee: Employee) => (
-                                        <tr key={employee.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-white">
-                                                    {employee.name}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {employee.email}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {employee.department}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-300">
-                                                    {employee.role}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
-                                                        employee.status
-                                                    )}`}
-                                                >
-                                                    {employee.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button
-                                                    onClick={() =>
-                                                        handleEditClick(
-                                                            employee
-                                                        )
-                                                    }
-                                                    className="text-red-400 hover:text-red-300 mr-3"
-                                                >
-                                                    <Edit className="h-5 w-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDeleteClick(
-                                                            employee
-                                                        )
-                                                    }
-                                                    className="text-red-800 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="h-5 w-5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <EmployeesTableSection
+                            employees={emplData}
+                            handleEditClick={handleEditClick}
+                            handleDeleteClick={handleDeleteClick}
+                            getStatusBadgeColor={getStatusBadgeColor}
+                        />
                     )}
 
                     {/* Pagination */}
-                    <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-600 sm:px-6">
-                        <div className="flex-1 flex justify-between sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setCurrentPage((prev) =>
-                                        Math.max(prev - 1, 1)
-                                    )
-                                }
-                                disabled={currentPage === 1}
-                                className={`${
-                                    currentPage === 1
-                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                } relative inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md`}
-                            >
-                                Previous
-                            </button>
-                            <button
-                                onClick={() =>
-                                    setCurrentPage((prev) =>
-                                        Math.min(prev + 1, totalPages)
-                                    )
-                                }
-                                disabled={currentPage === totalPages}
-                                className={`${
-                                    currentPage === totalPages
-                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                } ml-3 relative inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md`}
-                            >
-                                Next
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm text-gray-300">
-                                    Showing{' '}
-                                    <span className="font-medium">
-                                        {employees.length}
-                                    </span>{' '}
-                                    results
-                                </p>
-                            </div>
-                            <div>
-                                <nav
-                                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                                    aria-label="Pagination"
-                                >
-                                    <button
-                                        onClick={() =>
-                                            setCurrentPage((prev) =>
-                                                Math.max(prev - 1, 1)
-                                            )
-                                        }
-                                        disabled={currentPage === 1}
-                                        className={`${
-                                            currentPage === 1
-                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                        } relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-600 text-sm font-medium`}
-                                    >
-                                        <span className="sr-only">
-                                            Previous
-                                        </span>
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </button>
-
-                                    {[...Array(totalPages)].map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() =>
-                                                setCurrentPage(index + 1)
-                                            }
-                                            className={`${
-                                                currentPage === index + 1
-                                                    ? 'bg-red-600 border-red-600 text-white'
-                                                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
-                                            } relative inline-flex items-center px-4 py-2 border text-sm font-medium`}
-                                        >
-                                            {index + 1}
-                                        </button>
-                                    ))}
-
-                                    <button
-                                        onClick={() =>
-                                            setCurrentPage((prev) =>
-                                                Math.min(prev + 1, totalPages)
-                                            )
-                                        }
-                                        disabled={currentPage === totalPages}
-                                        className={`${
-                                            currentPage === totalPages
-                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                        } relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-600 text-sm font-medium`}
-                                    >
-                                        <span className="sr-only">Next</span>
-                                        <ChevronRight className="h-5 w-5" />
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
+                    <Pagination
+                        emplCount={emplCount}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                    />
                 </div>
             </div>
 
             {/* Edit Employee Modal */}
             {editEmployee && (
-                <div className="fixed z-10 inset-0 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div
-                            className="fixed inset-0 transition-opacity"
-                            aria-hidden="true"
-                        >
-                            <div className="absolute inset-0 bg-black opacity-75"></div>
-                        </div>
-                        <span
-                            className="hidden sm:inline-block sm:align-middle sm:h-screen"
-                            aria-hidden="true"
-                        >
-                            &#8203;
-                        </span>
-                        <div className="inline-block align-bottom bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <h3 className="text-lg leading-6 font-medium text-white mb-4">
-                                    Edit Employee
-                                </h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label
-                                            htmlFor="name"
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            value={editEmployee.name}
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>
-                                            ) =>
-                                                setEditEmployee({
-                                                    ...editEmployee,
-                                                    name: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="email"
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            value={editEmployee.email}
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>
-                                            ) =>
-                                                setEditEmployee({
-                                                    ...editEmployee,
-                                                    email: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="department"
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Department
-                                        </label>
-                                        <select
-                                            id="department"
-                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            value={editEmployee.department}
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLSelectElement>
-                                            ) =>
-                                                setEditEmployee({
-                                                    ...editEmployee,
-                                                    department: e.target.value,
-                                                })
-                                            }
-                                        >
-                                            {departments.map((dept) => (
-                                                <option key={dept} value={dept}>
-                                                    {dept}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="role"
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Role
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="role"
-                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            value={editEmployee.role}
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>
-                                            ) =>
-                                                setEditEmployee({
-                                                    ...editEmployee,
-                                                    role: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="status"
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Status
-                                        </label>
-                                        <select
-                                            id="status"
-                                            className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 bg-gray-800 text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            value={editEmployee.status}
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLSelectElement>
-                                            ) =>
-                                                setEditEmployee({
-                                                    ...editEmployee,
-                                                    status: e.target
-                                                        .value as Employee['status'],
-                                                })
-                                            }
-                                        >
-                                            {statuses.map((status) => (
-                                                <option
-                                                    key={status}
-                                                    value={status}
-                                                >
-                                                    {status}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button
-                                    type="button"
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                    onClick={handleSaveEdit}
-                                >
-                                    Save
-                                </button>
-                                <button
-                                    type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-700 text-base font-medium text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                    onClick={() => setEditEmployee(null)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <EditEmployeeForm
+                    employee={editEmployee}
+                    isEditing={false}
+                    onSave={handleSaveEdit}
+                    onCancel={() => {
+                        setEditEmployee(null);
+                        setEditFormErrors(null);
+                    }}
+                    isSubmitting={isSubmitting}
+                    error={editFormErrors}
+                    setEmployee={setEditEmployee}
+                />
+            )}
+
+            {/* Add Employee Modal */}
+            {addEmployee && (
+                <AddEmployeeForm
+                    employee={addEmployee}
+                    isEditing={false}
+                    onSave={handleSaveAdd}
+                    onCancel={() => {
+                        setAddEmployee(null);
+                        setFormErrors(null);
+                    }}
+                    isSubmitting={isSubmitting}
+                    error={formErrors}
+                    setEmployee={setAddEmployee}
+                />
             )}
 
             {/* Delete Confirmation Modal */}
@@ -695,6 +388,15 @@ const EmployeeDashboard: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* show success message */}
+            {showSuccess && (
+                <SuccessMessage
+                    message="User has been successfully added!"
+                    duration={5000}
+                    onClose={() => setShowSuccess(false)}
+                />
+            )}
+            {/* show error message */}
         </div>
     );
 };

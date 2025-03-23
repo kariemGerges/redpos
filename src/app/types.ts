@@ -1,13 +1,32 @@
 // File: types.ts
-export interface Product {
-    id: string;
+export type Product = {
+    id: number;
     name: string;
     price: number;
     category: string;
-    imageUrl: string;
-}
+    image: string;
+};
 
-export interface CartItemType {
+export type CartItem = {
     product: Product;
     quantity: number;
+};
+
+export interface Employee {
+    _id: number;
+    name: string;
+    role: string;
+    email: string;
+    phone: string;
+    password: string;
+    deletedAt: Date | null;
+    lastLogin: Date | null;
+    isLogin: boolean;
+    isAdmin: boolean;
+    isActive: boolean;
+    isBanned: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    employeeId: string;
+    status: 'Active' | 'On Leave' | 'Terminated';
 }
